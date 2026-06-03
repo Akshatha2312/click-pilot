@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: clickpilot-server
+    runtime: node
+    startCommand: npm start
+    envVars:
+      - key: MONGODB_URI
+        fromDatabase:
+          name: clickpilot
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        value: https://clickpilot-client.onrender.com
+
+databases:
+  - name: clickpilot
+    plan: free
+
+  - type: web
+    name: clickpilot-client
+    runtime: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    routes:
+      - path: "/*"
+        destination: /index.html
