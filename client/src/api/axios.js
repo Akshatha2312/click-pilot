@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (
+const envUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
+
+const API_BASE_URL = envUrl || (
   typeof window !== "undefined"
     ? `${window.location.protocol}//${window.location.host}`
     : "http://localhost:5000"

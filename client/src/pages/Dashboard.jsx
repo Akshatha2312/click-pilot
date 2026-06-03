@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import { HiLink, HiEye, HiChartBarSquare, HiArrowTrendingUp } from "react-icons/hi2";
 import { Line, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -16,9 +15,7 @@ import {
   Legend,
   Filler,
 } from "chart.js";
-import api, { API_BASE_URL } from "../api/axios";
-import StatCard from "../components/StatCard";
-import SkeletonCard from "../components/SkeletonCard";
+import api from "../api/axios";
 import EmptyState from "../components/EmptyState";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
@@ -97,56 +94,6 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      <motion.div variants={container} initial="hidden" animate="show" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {loading ? (
-          <>
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </>
-        ) : (
-          <>
-            <motion.div variants={item}>
-              <StatCard
-                label="Total Links"
-                value={data.totalLinks}
-                note="All-time created"
-                icon={<HiLink className="h-6 w-6" />}
-                tone="indigo"
-              />
-            </motion.div>
-            <motion.div variants={item}>
-              <StatCard
-                label="Total Clicks"
-                value={data.totalClicks}
-                note="Traffic tracked"
-                icon={<HiEye className="h-6 w-6" />}
-                tone="cyan"
-              />
-            </motion.div>
-            <motion.div variants={item}>
-              <StatCard
-                label="Avg. CTR"
-                value={data.totalLinks > 0 ? Math.round((data.totalClicks / data.totalLinks / 10) * 100) / 100 : 0}
-                note="Clicks per link"
-                icon={<HiChartBarSquare className="h-6 w-6" />}
-                tone="emerald"
-              />
-            </motion.div>
-            <motion.div variants={item}>
-              <StatCard
-                label="Growth"
-                value="+12%"
-                note="This week"
-                icon={<HiArrowTrendingUp className="h-6 w-6" />}
-                tone="orange"
-              />
-            </motion.div>
-          </>
-        )}
-      </motion.div>
-
       <div className="grid gap-6 lg:grid-cols-2">
         <motion.div variants={item} className="card p-6">
           <h3 className="mb-4 font-heading text-lg font-bold">Clicks Over Time</h3>
@@ -184,19 +131,38 @@ export default function Dashboard() {
           />
         ) : (
           <div className="space-y-3">
-            {data.latestLinks.map((link) => (
-              <motion.div
-                key={link._id}
-                whileHover={{ scale: 1.01, x: 4 }}
-                className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
-              >
-                <p className="truncate font-semibold text-slate-900 dark:text-white">{link.shortCode}</p>
-                <p className="truncate text-sm text-slate-600 dark:text-slate-300">{link.originalUrl}</p>
-                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                  {link.clicks} clicks • {new Date(link.createdAt).toLocaleDateString()}
-                </p>
-              </motion.div>
-            ))}
+            {data.latestLinks.map((link) => {
+              const isExpired = link.expiresAt && new Date(link.expiresAt) < new Date();
+              return (
+                <motion.div
+                  key={link._id}
+                  whileHover={{ scale: 1.01, x: 4 }}
+                  className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="truncate font-semibold text-slate-900 dark:text-white">{link.shortCode}</p>
+                      <p className="truncate text-sm text-slate-600 dark:text-slate-300">{link.originalUrl}</p>
+                      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        {link.clicks} clicks • {new Date(link.createdAt).toLocaleDateString()}
+                        {link.expiresAt && ` • Expires: ${new Date(link.expiresAt).toLocaleDateString()}`}
+                      </p>
+                    </div>
+                    <div className="ml-2">
+                      {isExpired ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-1 text-xs font-semibold text-red-600 dark:text-red-400 whitespace-nowrap">
+                          ● Expired
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                          ● Active
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </motion.div>

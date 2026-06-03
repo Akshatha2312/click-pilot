@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { HiArrowLeft, HiLink, HiEye, HiCalendarDays } from "react-icons/hi2";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer } from "recharts";
 import axios from "axios";
 
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
@@ -11,14 +12,18 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000
 export default function PublicStats() {
   const { shortCode } = useParams();
   const [stats, setStats] = useState(null);
+  const [trends, setTrends] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios
-      .get(`${API_BASE_URL}/api/links/stats/${shortCode}`)
-      .then((r) => {
-        setStats(r.data.stats);
+    Promise.all([
+      axios.get(`${API_BASE_URL}/api/links/stats/${shortCode}`),
+      axios.get(`${API_BASE_URL}/api/links/stats/${shortCode}/trends`),
+    ])
+      .then(([statsRes, trendsRes]) => {
+        setStats(statsRes.data.stats);
+        setTrends(trendsRes.data.data || []);
         setError(null);
       })
       .catch((err) => {
@@ -52,10 +57,11 @@ export default function PublicStats() {
   }
 
   const shortUrl = `${API_BASE_URL}/api/links/${stats.shortCode}`;
+  const isExpired = stats.status === "expired";
 
   return (
     <div className="min-h-screen animated-bg bg-hero-light dark:bg-hero-dark py-8 px-4">
-      <motion.div initial="hidden" animate="show" className="max-w-2xl mx-auto space-y-6">
+      <motion.div initial="hidden" animate="show" className="max-w-4xl mx-auto space-y-6">
         <motion.div variants={item} className="flex items-center justify-between">
           <Link to="/" className="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
             <HiArrowLeft className="h-5 w-5" />
@@ -65,7 +71,7 @@ export default function PublicStats() {
         </motion.div>
 
         {/* Stats Cards */}
-        <motion.div variants={item} className="grid gap-4 sm:grid-cols-3">
+        <motion.div variants={item} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="card p-6 text-center">
             <div className="mx-auto mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
               <HiEye className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
@@ -83,15 +89,65 @@ export default function PublicStats() {
           </div>
 
           <div className="card p-6 text-center">
-            <div className={`mx-auto mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg ${stats.status === "expired" ? "bg-red-100 dark:bg-red-900/30" : "bg-green-100 dark:bg-green-900/30"}`}>
-              <span className={`text-sm font-bold ${stats.status === "expired" ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
-                {stats.status === "expired" ? "✕" : "✓"}
+            <div className="mx-auto mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
+              <HiCalendarDays className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+            </div>
+            <p className="text-lg font-bold text-slate-900 dark:text-white">
+              {stats.lastVisitedAt ? new Date(stats.lastVisitedAt).toLocaleDateString() : "Never"}
+            </p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Last Visited</p>
+          </div>
+
+          <div className="card p-6 text-center">
+            <div
+              className={`mx-auto mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg ${
+                isExpired ? "bg-red-100 dark:bg-red-900/30" : "bg-emerald-100 dark:bg-emerald-900/30"
+              }`}
+            >
+              <span
+                className={`text-sm font-bold ${isExpired ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}
+              >
+                {isExpired ? "✕" : "✓"}
               </span>
             </div>
             <p className="text-lg font-bold capitalize text-slate-900 dark:text-white">{stats.status}</p>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Status</p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              {stats.expiresAt ? new Date(stats.expiresAt).toLocaleDateString() : "No expiry"}
+            </p>
           </div>
         </motion.div>
+
+        {/* Trends Chart */}
+        {trends.length > 0 ? (
+          <motion.div variants={item} className="card p-6">
+            <h2 className="font-heading text-lg font-bold mb-4">Daily Click Trend</h2>
+            <div className="relative h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={trends}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.1} />
+                  <XAxis dataKey="date" stroke="currentColor" opacity={0.5} />
+                  <YAxis stroke="currentColor" opacity={0.5} />
+                  <ReTooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(15, 23, 42, 0.95)",
+                      border: "1px solid rgba(148, 163, 184, 0.2)",
+                      borderRadius: "8px",
+                    }}
+                    labelStyle={{ color: "rgb(226, 232, 240)" }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="clicks"
+                    stroke="rgb(79, 70, 229)"
+                    strokeWidth={2}
+                    dot={{ fill: "rgb(79, 70, 229)", r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        ) : null}
 
         {/* Details Card */}
         <motion.div variants={item} className="card p-6">

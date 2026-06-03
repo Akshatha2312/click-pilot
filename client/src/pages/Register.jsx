@@ -55,9 +55,15 @@ export default function Register() {
       >
         <div className="card p-8 sm:p-10">
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-violet-600 font-heading text-2xl font-bold text-white">
-              CP
-            </div>
+            <Link to="/" className="inline-block group">
+              <motion.div
+                whileHover={{ scale: 1.05, rotate: [0, -8, 8, 0] }}
+                transition={{ duration: 0.4 }}
+                className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-violet-600 font-heading text-2xl font-bold text-white shadow-lg shadow-brand-500/15"
+              >
+                CP
+              </motion.div>
+            </Link>
             <h1 className="heading-lg">Create account</h1>
             <p className="mt-2 text-slate-600 dark:text-slate-300">
               Join thousands of teams using ClickPilot

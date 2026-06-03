@@ -12,7 +12,11 @@ const visitSchema = new mongoose.Schema(
       enum: ["mobile", "tablet", "desktop"],
     },
     browser: String,
+    os: String,
     country: String,
+    region: String,
+    city: String,
+    referrer: String,
   },
   { _id: false }
 );

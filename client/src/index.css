@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -9,6 +9,7 @@
   body,
   #root {
     @apply min-h-screen;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -16,13 +17,13 @@
   }
 
   * {
-    @apply border-slate-200 dark:border-slate-800;
+    @apply border-slate-200 dark:border-slate-800/60;
   }
 }
 
 @layer components {
   .glass {
-    @apply bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white/40 dark:border-slate-800/70;
+    @apply bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 dark:border-slate-800/30;
   }
 
   .heading-xl {
@@ -34,19 +35,19 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-white bg-gradient-to-r from-brand-600 via-violet-600 to-fuchsia-600 shadow-lg shadow-brand-600/30 transition-all duration-200 hover:scale-[1.02] hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-white bg-gradient-to-r from-brand-600 via-violet-600 to-fuchsia-600 shadow-lg shadow-brand-600/20 transition-all duration-200 hover:scale-[1.02] hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 hover:scale-[1.02] hover:bg-slate-50 dark:hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-slate-700 dark:text-slate-200 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/80 transition-all duration-200 hover:scale-[1.02] hover:bg-slate-50 dark:hover:bg-slate-800/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400;
   }
 
   .card {
-    @apply rounded-2xl border bg-white/85 dark:bg-slate-900/70 shadow-card dark:shadow-cardDark;
+    @apply rounded-2xl border bg-white/80 dark:bg-slate-900/50 backdrop-blur-md shadow-card dark:shadow-cardDark;
   }
 
   .input {
-    @apply w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-400 transition-all;
+    @apply w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white/60 dark:bg-slate-900/50 px-4 py-3 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-400 transition-all;
   }
 
   .floating-label {
@@ -55,16 +56,78 @@
 }
 
 .animated-bg {
-  background-image: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.2), transparent 35%),
-    radial-gradient(circle at 80% 0%, rgba(34, 211, 238, 0.2), transparent 35%),
-    radial-gradient(circle at 40% 90%, rgba(236, 72, 153, 0.18), transparent 30%);
+  background-image: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.12), transparent 40%),
+    radial-gradient(circle at 90% 10%, rgba(34, 211, 238, 0.12), transparent 40%),
+    radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.08), transparent 35%);
+}
+
+/* Premium scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.45);
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.25);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 0.45);
 }
 
 .table-scroll::-webkit-scrollbar {
-  height: 8px;
+  height: 6px;
+}
+.table-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
 }
 
-.table-scroll::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.5);
-  border-radius: 999px;
+/* Custom premium styles for React Toastify */
+.Toastify__toast-container {
+  padding: 12px;
+}
+
+.Toastify__toast {
+  border-radius: 12px !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+}
+
+.dark .Toastify__toast {
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+}
+
+.Toastify__toast--success {
+  background: rgba(240, 253, 250, 0.85) !important;
+  color: #0f766e !important;
+}
+
+.dark .Toastify__toast--success {
+  background: rgba(13, 148, 136, 0.15) !important;
+  color: #2dd4bf !important;
+}
+
+.Toastify__toast--error {
+  background: rgba(254, 242, 242, 0.85) !important;
+  color: #b91c1c !important;
+}
+
+.dark .Toastify__toast--error {
+  background: rgba(220, 38, 38, 0.15) !important;
+  color: #f87171 !important;
 }

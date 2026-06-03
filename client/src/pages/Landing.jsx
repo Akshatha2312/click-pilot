@@ -51,12 +51,16 @@ export default function Landing() {
       {/* Navigation */}
       <nav className="sticky top-0 z-40 border-b border-slate-200/50 dark:border-slate-800/50 bg-white/80 dark:bg-slate-950/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-2">
-            <div className="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-brand-600 to-violet-600 font-heading text-lg font-bold text-white">
+          <Link to="/" className="flex items-center gap-2 group">
+            <motion.div
+              whileHover={{ scale: 1.05, rotate: [0, -8, 8, 0] }}
+              transition={{ duration: 0.4 }}
+              className="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-brand-600 to-violet-600 font-heading text-lg font-bold text-white shadow-md shadow-brand-500/10"
+            >
               CP
-            </div>
-            <span className="font-heading text-xl font-bold">ClickPilot</span>
-          </motion.div>
+            </motion.div>
+            <span className="font-heading text-xl font-bold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">ClickPilot</span>
+          </Link>
           <div className="flex items-center gap-4">
             <Link to="/login" className="btn-secondary text-sm">
               Sign In

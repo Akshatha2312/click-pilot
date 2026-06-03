@@ -1,5 +1,11 @@
 const UAParser = require("ua-parser-js");
 const QRCode = require("qrcode");
+let geoip;
+try {
+  geoip = require('geoip-lite');
+} catch (e) {
+  geoip = null;
+}
 
 // Parse user agent to get device and browser info
 const parseUserAgent = (userAgent) => {
@@ -18,8 +24,23 @@ const parseUserAgent = (userAgent) => {
   };
 
   const browser = browserMap[result.browser.name] || "other";
+  const os = result.os?.name || "unknown";
 
-  return { device, browser };
+  return { device, browser, os };
+};
+
+const getGeoFromIP = (ip) => {
+  if (!geoip) return { country: null, region: null, city: null };
+  try {
+    const geo = geoip.lookup(ip) || {};
+    return {
+      country: geo.country || null,
+      region: geo.region || null,
+      city: geo.city || null,
+    };
+  } catch (e) {
+    return { country: null, region: null, city: null };
+  }
 };
 
 // Extract IP address from request
@@ -54,4 +75,5 @@ module.exports = {
   parseUserAgent,
   getClientIP,
   generateQRCode,
+  getGeoFromIP,
 };

@@ -6,8 +6,14 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem("clickpilot_token") || "");
   const [user, setUser] = useState(() => {
-    const raw = localStorage.getItem("clickpilot_user");
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const raw = localStorage.getItem("clickpilot_user");
+      if (!raw || raw === "undefined") return null;
+      return JSON.parse(raw);
+    } catch (err) {
+      localStorage.removeItem("clickpilot_user");
+      return null;
+    }
   });
   const [loading, setLoading] = useState(Boolean(token));
 
