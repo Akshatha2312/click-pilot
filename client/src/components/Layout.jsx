@@ -83,15 +83,15 @@ export default function Layout() {
 
         <nav className="space-y-1.5 relative">
           {navItems.map((item) => (
-            <NavLink
+            <NavLink end
               key={item.to}
               to={item.to}
               onClick={() => isMobile && setOpen(false)}
               className={({ isActive }) =>
-                `group relative flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition-all duration-200 ${
+                `group relative flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition-colors duration-200 ${
                   isActive
-                    ? "text-white"
-                    : "text-customDark dark:text-slate-200 hover:bg-customSec/25 dark:hover:bg-white/5"
+                    ? "bg-orange-500 text-white"
+                    : "text-slate-700 dark:text-slate-200 hover:bg-customSec/25 dark:hover:bg-white/5"
                 }`
               }
             >
@@ -104,7 +104,7 @@ export default function Layout() {
                       transition={{ type: "spring", stiffness: 350, damping: 28 }}
                     />
                   )}
-                  <span className={isActive ? "text-white" : "text-customDark/70 dark:text-slate-400 group-hover:text-customAccent transition-colors"}>
+                  <span className={isActive ? "text-white" : "text-slate-700 dark:text-slate-200 group-hover:text-customAccent transition-colors"}>
                     {item.icon}
                   </span>
                   <span>{item.label}</span>
