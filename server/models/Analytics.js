@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const analyticsSchema = new mongoose.Schema({
-  urlId: { type: mongoose.Schema.Types.ObjectId, ref: 'Link', required: true, index: true },
-  shortCode: { type: String, required: true, index: true },
+  urlId: { type: mongoose.Schema.Types.ObjectId, ref: 'Link', required: true },
+  shortCode: { type: String, required: true },
   timestamp: { type: Date, default: Date.now, index: true },
   ip: String,
   device: { type: String, enum: ['mobile', 'tablet', 'desktop'] },
