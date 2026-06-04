@@ -1,258 +1,320 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import { HiLink, HiArrowRight, HiCheck, HiCalendarDays, HiClipboardCopy, HiExternalLink } from "react-icons/hi2";
+import {
+  HiLink,
+  HiArrowRight,
+  HiCheck,
+  HiCalendarDays,
+  HiClipboard,
+} from "react-icons/hi2";
+
 import api, { API_BASE_URL } from "../api/axios";
 
-const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 },
+};
 
 export default function CreateLink() {
-  const [form, setForm] = useState({ originalUrl: "", shortCode: "", expiresAt: "" });
+  const [form, setForm] = useState({
+    originalUrl: "",
+    shortCode: "",
+    expiresAt: "",
+  });
+
   const [createdLink, setCreatedLink] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [checking, setChecking] = useState(false);
   const [availability, setAvailability] = useState(null);
-  
-  // Get min date (today)
-  const today = new Date().toISOString().split("T")[0];
+
+  const shortUrl = createdLink
+    ? `${API_BASE_URL}/api/links/${createdLink.shortCode}`
+    : "";
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!form.originalUrl) {
+      newErrors.originalUrl = "URL is required";
+    } else if (!/^https?:\/\/.+/.test(form.originalUrl)) {
+      newErrors.originalUrl =
+        "URL must start with http:// or https://";
+    }
+
+    if (
+      form.shortCode &&
+      !/^[a-zA-Z0-9_-]+$/.test(form.shortCode)
+    ) {
+      newErrors.shortCode =
+        "Only letters, numbers, _ and - allowed";
+    }
+
+    if (
+      form.expiresAt &&
+      new Date(form.expiresAt) <= new Date()
+    ) {
+      newErrors.expiresAt =
+        "Expiry date must be future date";
+    }
+
+    return newErrors;
+  };
 
   const checkAvailability = async () => {
     if (!form.shortCode) {
-      toast.error("Enter a short code to check availability");
+      toast.error("Enter short code");
       return;
     }
-    setChecking(true);
+
     try {
-      const res = await api.get(`/links/check/${form.shortCode}`);
-      const isAvailable = res.data.available;
-      setAvailability(isAvailable);
-      toast.success(isAvailable ? "✓ Available" : "✗ Already taken");
+      setChecking(true);
+
+      const res = await api.get(
+        `/links/check/${form.shortCode}`
+      );
+
+      setAvailability(res.data.available);
+
+      toast.success(
+        res.data.available
+          ? "Available"
+          : "Already Taken"
+      );
     } catch (err) {
-      setAvailability(false);
-      toast.error("Error checking availability");
+      toast.error("Check failed");
     } finally {
       setChecking(false);
     }
   };
 
-  const shortUrl = createdLink ? `${API_BASE_URL}/api/links/${createdLink.shortCode}` : "";
-
-  const validate = () => {
-    const newErrors = {};
-    if (!form.originalUrl) newErrors.originalUrl = "URL is required";
-    else if (!/^https?:\/\/.+/.test(form.originalUrl)) newErrors.originalUrl = "Must start with http:// or https://";
-    if (form.shortCode && !/^[a-zA-Z0-9_-]+$/.test(form.shortCode)) {
-      newErrors.shortCode = "Only letters, numbers, dashes, underscores allowed";
-    }
-    if (form.expiresAt && new Date(form.expiresAt) <= new Date()) {
-      newErrors.expiresAt = "Expiry date must be in the future";
-    }
-    return newErrors;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newErrors = validate();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+
+    const validationErrors = validate();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
 
-    setErrors({});
-    setLoading(true);
-
     try {
+      setLoading(true);
+
       const payload = {
         originalUrl: form.originalUrl,
-        shortCode: form.shortCode || undefined,
       };
-      if (form.expiresAt) {
-        payload.expiresAt = new Date(form.expiresAt).toISOString();
+
+      if (form.shortCode) {
+        payload.shortCode = form.shortCode;
       }
 
-      const response = await api.post("/links/create", payload);
-      setCreatedLink(response.data.link);
-      toast.success("✅ Link created successfully!");
-      setForm({ originalUrl: "", shortCode: "", expiresAt: "" });
-      setTimeout(() => setCreatedLink(null), 5000);
+      if (form.expiresAt) {
+        payload.expiresAt = new Date(
+          form.expiresAt
+        ).toISOString();
+      }
+
+      const res = await api.post(
+        "/links/create",
+        payload
+      );
+
+      setCreatedLink(res.data.link);
+
+      toast.success("Link Created");
+
+      setForm({
+        originalUrl: "",
+        shortCode: "",
+        expiresAt: "",
+      });
+
+      setAvailability(null);
     } catch (err) {
-      const message = err.response?.data?.message || "Failed to create link";
-      toast.error(`❌ ${message}`);
+      toast.error(
+        err.response?.data?.message ||
+        "Failed to create link"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const shortUrl = createdLink ? `${API_BASE_URL}/api/links/${createdLink.shortCode}` : "";
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(shortUrl);
-    toast.success("Copied to clipboard!");
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(shortUrl);
+      toast.success("Copied");
+    } catch {
+      toast.error("Copy failed");
+    }
   };
 
   return (
-    <motion.div initial="hidden" animate="show" className="flex flex-col items-center px-4 py-6">
+    <motion.div
+      initial="hidden"
+      animate="show"
+      className="flex flex-col items-center px-4 py-6"
+    >
       <motion.div variants={item}>
-        <h1 className="heading-lg">Create Short Link</h1>
-        <p className="text-slate-600 dark:text-slate-400">Paste any URL and get a short, shareable link</p>
+        <h1 className="heading-lg">
+          Create Short Link
+        </h1>
+
+        <p className="text-slate-600">
+          Paste URL and create short link
+        </p>
       </motion.div>
 
-      <div className="w-full max-w-xl">
-        <motion.div variants={item} className="card p-8 max-w-full mx-auto hover:shadow-xl transition-shadow duration-300">
-          <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="w-full max-w-xl mt-6">
+        <motion.div
+          variants={item}
+          className="card p-8"
+        >
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-5"
+          >
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              <label className="block mb-2 text-sm font-medium">
                 Original URL
               </label>
+
               <div className="relative">
                 <HiLink className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+
                 <input
                   type="url"
                   value={form.originalUrl}
-                  onChange={(e) => {
-                    setForm({ ...form, originalUrl: e.target.value });
-                    if (errors.originalUrl) setErrors({ ...errors, originalUrl: "" });
-                  }}
-                  placeholder="https://example.com/long-url"
-                  className={`input pl-10 ${errors.originalUrl ? "border-red-400" : ""}`}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      originalUrl: e.target.value,
+                    })
+                  }
+                  placeholder="https://example.com"
+                  className="input pl-10 w-full"
                 />
               </div>
-              {errors.originalUrl ? <p className="mt-1 text-xs text-red-500">{errors.originalUrl}</p> : null}
+
+              {errors.originalUrl && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.originalUrl}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                Custom Short Code (Optional)
+              <label className="block mb-2 text-sm font-medium">
+                Custom Code
               </label>
-              <div className="flex items-center space-x-2">
+
+              <div className="flex gap-2">
                 <input
                   type="text"
                   value={form.shortCode}
                   onChange={(e) => {
-                    setForm({ ...form, shortCode: e.target.value });
-                    if (errors.shortCode) setErrors({ ...errors, shortCode: "" });
+                    setForm({
+                      ...form,
+                      shortCode: e.target.value,
+                    });
+
                     setAvailability(null);
                   }}
-                  placeholder="my-custom-code"
-                  className={`input flex-1 ${errors.shortCode ? "border-red-400" : ""}`}
+                  placeholder="my-code"
+                  className="input flex-1"
                 />
+
                 <button
                   type="button"
                   onClick={checkAvailability}
-                  disabled={checking}
-                  className="btn-primary whitespace-nowrap"
+                  className="btn-primary"
                 >
-                  {checking ? "Checking…" : "Check Availability"}
+                  {checking
+                    ? "Checking..."
+                    : "Check"}
                 </button>
               </div>
+
               {availability !== null && (
-                <p className={`mt-1 text-xs ${availability ? "text-green-600" : "text-red-600"}`}>
-                  {availability ? "✓ Available" : "✗ Already Taken"}
+                <p
+                  className={`text-xs mt-1 ${availability
+                    ? "text-green-600"
+                    : "text-red-600"
+                    }`}
+                >
+                  {availability
+                    ? "Available"
+                    : "Already Taken"}
                 </p>
-              )}
-              {errors.shortCode ? <p className="mt-1 text-xs text-red-500">{errors.shortCode}</p> : null}
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Leave blank for auto-generated code</p>
-              {form.shortCode && (
-                <div className="mt-2 flex items-center space-x-2 text-sm">
-                  <span className="text-slate-600 dark:text-slate-300">Short URL Preview:</span>
-                  <a
-                    href={`${API_BASE_URL}/${form.shortCode}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono text-emerald-600 hover:underline"
-                  >
-                    {`${API_BASE_URL}/${form.shortCode}`}
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText(`${API_BASE_URL}/${form.shortCode}`);
-                      toast.success("Copied preview URL!");
-                    }}
-                    className="p-1 hover:text-emerald-800"
-                  >
-                    <HiClipboardCopy className="h-4 w-4" />
-                  </button>
-                  <a
-                    href={`${API_BASE_URL}/${form.shortCode}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-1 hover:text-emerald-800"
-                  >
-                    <HiExternalLink className="h-4 w-4" />
-                  </a>
-                </div>
               )}
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                Link Expiry Date (Optional)
+              <label className="block mb-2 text-sm font-medium">
+                Expiry Date
               </label>
+
               <div className="relative">
                 <HiCalendarDays className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+
                 <input
                   type="datetime-local"
                   value={form.expiresAt}
-                  onChange={(e) => {
-                    setForm({ ...form, expiresAt: e.target.value });
-                    if (errors.expiresAt) setErrors({ ...errors, expiresAt: "" });
-                  }}
-                  min={new Date().toISOString().slice(0, 16)}
-                  className={`input pl-10 ${errors.expiresAt ? "border-red-400" : ""}`}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      expiresAt: e.target.value,
+                    })
+                  }
+                  className="input pl-10 w-full"
                 />
               </div>
-              {errors.expiresAt ? <p className="mt-1 text-xs text-red-500">{errors.expiresAt}</p> : null}
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Link will stop working after this date</p>
             </div>
 
-            <motion.button
-              whileTap={{ scale: 0.98 }}
+            <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full"
+              className="btn-primary w-full flex items-center justify-center gap-2"
             >
-              {loading ? "Creating..." : "Create Link"}
-              {!loading ? <HiArrowRight /> : null}
-            </motion.button>
+              {loading
+                ? "Creating..."
+                : "Create Link"}
+
+              {!loading && <HiArrowRight />}
+            </button>
           </form>
         </motion.div>
 
-        {createdLink ? (
+        {createdLink && (
           <motion.div
             variants={item}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="card p-8 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-2 border-emerald-200 dark:border-emerald-800 mt-6"
+            className="card p-6 mt-6"
           >
             <div className="text-center">
-              <div className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-200 dark:bg-emerald-800">
-                <HiCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <p className="text-sm text-slate-600 dark:text-slate-300">Your short link is ready!</p>
-              <div className="mt-4 rounded-lg bg-white dark:bg-slate-800 p-4">
-                <p className="truncate font-mono text-sm font-semibold text-slate-900 dark:white">
-                  {createdLink.shortCode}
+              <HiCheck className="mx-auto h-10 w-10 text-green-600 mb-3" />
+
+              <h2 className="font-semibold mb-3">
+                Link Created
+              </h2>
+
+              <div className="border rounded-lg p-3">
+                <p className="font-mono break-all">
+                  {shortUrl}
                 </p>
-                <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">{shortUrl}</p>
               </div>
-              {createdLink.expiresAt && (
-                <div className="mt-3 text-xs text-slate-600 dark:text-slate-300">
-                  Expires: {new Date(createdLink.expiresAt).toLocaleString()}
-                </div>
-              )}
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                type="button"
+
+              <button
                 onClick={copyToClipboard}
-                className="btn-primary mt-4 w-full"
+                className="btn-primary mt-4 flex items-center justify-center gap-2 w-full"
               >
+                <HiClipboard />
                 Copy Link
-              </motion.button>
+              </button>
             </div>
           </motion.div>
-        ) : null}
+        )}
       </div>
     </motion.div>
   );

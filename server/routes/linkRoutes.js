@@ -19,6 +19,7 @@ const {
   analyticsCountryBreakdown,
   getLinkStatus,
   getPublicDailyTrends,
+  checkAvailability,
 } = require("../controllers/linkController");
 
 const { protect } = require("../middleware/authMiddleware");
@@ -30,6 +31,7 @@ router.post("/bulk", protect, bulkCreateLinks);
 // ================= READ =================
 router.get("/my-links", protect, getMyLinks);
 router.get("/dashboard", protect, getDashboardStats);
+router.get("/check/:shortCode", checkAvailability);
 router.get("/:id/status", protect, getLinkStatus);
 router.get("/analytics/:id", protect, getLinkAnalytics);
 router.get('/analytics/:linkId/overview', protect, analyticsOverview);

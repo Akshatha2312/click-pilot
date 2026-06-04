@@ -646,6 +646,31 @@ const bulkCreateLinks = async (req, res) => {
   }
 };
 
+const checkAvailability = async (req, res) => {
+  try {
+    const { shortCode } = req.params;
+
+    if (!shortCode) {
+      return res.status(400).json({
+        success: false,
+        message: "Short code is required",
+      });
+    }
+
+    const existingLink = await Link.findOne({ shortCode });
+
+    return res.status(200).json({
+      success: true,
+      available: !existingLink,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 const exportedControllers = {
   createLink,
   getMyLinks,
@@ -656,6 +681,7 @@ const exportedControllers = {
   redirectLink,
   getPublicStats,
   bulkCreateLinks,
+  checkAvailability,
 };
 
 module.exports = exportedControllers;
