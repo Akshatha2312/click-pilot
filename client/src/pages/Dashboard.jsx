@@ -15,39 +15,84 @@ import {
   Legend,
   Filler,
 } from "chart.js";
+import { format, formatDistanceToNow } from "date-fns";
+import {
+  HiLink,
+  HiChartBarSquare,
+  HiCheck,
+  HiCalendarDays,
+} from "react-icons/hi2";
 import api from "../api/axios";
 import EmptyState from "../components/EmptyState";
+import StatCard from "../components/StatCard";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
-const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
-const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
+const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } };
+const item = { hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
 
 export default function Dashboard() {
-  const [data, setData] = useState({ totalLinks: 0, totalClicks: 0, latestLinks: [] });
+  const [data, setData] = useState({
+    totalLinks: 0,
+    totalClicks: 0,
+    activeLinks: 0,
+    lastVisitedAt: null,
+    latestLinks: [],
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    api
-      .get("/links/dashboard")
-      .then((r) => {
-        setData(r.data);
-        setError(null);
-      })
-      .catch((err) => {
-        const message = err.response?.data?.message || "Failed to load dashboard";
-        setError(message);
-        toast.error(`❌ ${message}`);
-      })
-      .finally(() => setLoading(false));
+    let timer;
+    const fetchDashboard = (showLoading = false) => {
+      if (showLoading) setLoading(true);
+      api
+        .get("/links/dashboard")
+        .then((r) => {
+          setData(r.data);
+          setError(null);
+        })
+        .catch((err) => {
+          const message = err.response?.data?.message || "Failed to load dashboard";
+          setError(message);
+          toast.error(`❌ ${message}`);
+        })
+        .finally(() => {
+          if (showLoading) setLoading(false);
+        });
+    };
+
+    fetchDashboard(true);
+
+    // Safe polling every 12 seconds
+    timer = setInterval(() => {
+      fetchDashboard(false);
+    }, 12000);
+
+    return () => clearInterval(timer);
   }, []);
 
   const chartOptions = {
     responsive: true,
-    maintainAspectRatio: true,
-    plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true } },
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: "rgba(191, 201, 209, 0.15)",
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+    },
   };
 
   const lineData = {
@@ -56,8 +101,8 @@ export default function Dashboard() {
       {
         label: "Clicks",
         data: [12, 19, 8, 15, 22, 18, 25],
-        borderColor: "#4f46e5",
-        backgroundColor: "rgba(79, 70, 229, 0.1)",
+        borderColor: "#FF9B51",
+        backgroundColor: "rgba(255, 155, 81, 0.1)",
         fill: true,
         tension: 0.4,
       },
@@ -71,21 +116,32 @@ export default function Dashboard() {
         label: "Traffic",
         data: [65, 59, 80, 81, 56],
         backgroundColor: [
-          "rgba(79, 70, 229, 0.8)",
-          "rgba(34, 211, 238, 0.8)",
-          "rgba(16, 185, 129, 0.8)",
-          "rgba(236, 72, 153, 0.8)",
-          "rgba(249, 115, 22, 0.8)",
+          "rgba(255, 155, 81, 0.85)",
+          "rgba(37, 52, 63, 0.85)",
+          "rgba(191, 201, 209, 0.85)",
+          "rgba(16, 185, 129, 0.85)",
+          "rgba(236, 72, 153, 0.85)",
         ],
       },
     ],
   };
 
+  const formatLastVisited = (timestamp) => {
+    if (!timestamp) return "Never";
+    const date = new Date(timestamp);
+    return formatDistanceToNow(date, { addSuffix: true });
+  };
+
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={item}>
-        <h1 className="heading-lg">Dashboard</h1>
-        <p className="text-slate-600 dark:text-slate-400">Welcome back! Here's your link performance overview.</p>
+      <motion.div variants={item} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="heading-lg">Dashboard</h1>
+          <p className="text-slate-600 dark:text-slate-400">Welcome back! Here's your link performance overview.</p>
+        </div>
+        <Link to="/app/links/new" className="btn-primary self-start md:self-auto">
+          Create Short Link
+        </Link>
       </motion.div>
 
       {error && (
@@ -94,34 +150,68 @@ export default function Dashboard() {
         </motion.div>
       )}
 
+      {/* Stats Cards Row */}
+      <motion.div variants={item} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          label="Total Links"
+          value={loading ? "..." : data.totalLinks}
+          note="Short links created"
+          icon={<HiLink className="h-5 w-5" />}
+          tone="cyan"
+        />
+        <StatCard
+          label="Total Clicks"
+          value={loading ? "..." : data.totalClicks}
+          note="Across all links"
+          icon={<HiChartBarSquare className="h-5 w-5" />}
+          tone="indigo"
+        />
+        <StatCard
+          label="Active Links"
+          value={loading ? "..." : data.activeLinks}
+          note="Unexpired links"
+          icon={<HiCheck className="h-5 w-5" />}
+          tone="emerald"
+        />
+        <StatCard
+          label="Last Visit"
+          value={loading ? "..." : data.lastVisitedAt ? formatLastVisited(data.lastVisitedAt) : "Never"}
+          note={data.lastVisitedAt ? format(new Date(data.lastVisitedAt), "MMM d, h:mm a") : "No visits recorded"}
+          icon={<HiCalendarDays className="h-5 w-5" />}
+          tone="orange"
+        />
+      </motion.div>
+
+      {/* Charts Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
         <motion.div variants={item} className="card p-6">
-          <h3 className="mb-4 font-heading text-lg font-bold">Clicks Over Time</h3>
+          <h3 className="mb-4 font-heading text-lg font-bold text-customDark dark:text-white">Clicks Over Time</h3>
           <div className="relative h-64">
-            <Line data={lineData} options={{ ...chartOptions, maintainAspectRatio: false }} />
+            <Line data={lineData} options={chartOptions} />
           </div>
         </motion.div>
 
         <motion.div variants={item} className="card p-6">
-          <h3 className="mb-4 font-heading text-lg font-bold">Traffic Sources</h3>
+          <h3 className="mb-4 font-heading text-lg font-bold text-customDark dark:text-white">Traffic Sources</h3>
           <div className="relative h-64">
-            <Bar data={barData} options={{ ...chartOptions, maintainAspectRatio: false }} />
+            <Bar data={barData} options={chartOptions} />
           </div>
         </motion.div>
       </div>
 
+      {/* Latest Links Section */}
       <motion.div variants={item} className="card p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-heading text-lg font-bold">Latest Links</h3>
-          <Link to="/app/links" className="text-sm text-brand-600 hover:text-brand-700">
+          <h3 className="font-heading text-lg font-bold text-customDark dark:text-white">Latest Short Links</h3>
+          <Link to="/app/links" className="text-sm font-semibold text-customAccent hover:underline">
             View all
           </Link>
         </div>
 
-        {loading ? (
-          <div className="space-y-2">
-            <div className="h-12 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800" />
-            <div className="h-12 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800" />
+        {loading && data.latestLinks.length === 0 ? (
+          <div className="space-y-3">
+            <div className="h-16 animate-pulse rounded-xl bg-customSec/20 dark:bg-white/5" />
+            <div className="h-16 animate-pulse rounded-xl bg-customSec/20 dark:bg-white/5" />
           </div>
         ) : data.latestLinks.length === 0 ? (
           <EmptyState
@@ -130,31 +220,42 @@ export default function Dashboard() {
             action={<Link to="/app/links/new" className="btn-primary">Create Link</Link>}
           />
         ) : (
-          <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-1">
             {data.latestLinks.map((link) => {
               const isExpired = link.expiresAt && new Date(link.expiresAt) < new Date();
               return (
                 <motion.div
                   key={link._id}
-                  whileHover={{ scale: 1.01, x: 4 }}
-                  className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                  whileHover={{ scale: 1.005, x: 4 }}
+                  className="rounded-xl border border-customSec/35 dark:border-white/5 p-4 bg-white/50 dark:bg-customDark/30 hover:bg-white/90 dark:hover:bg-customDark/50 cursor-pointer transition-all duration-200"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="truncate font-semibold text-slate-900 dark:text-white">{link.shortCode}</p>
-                      <p className="truncate text-sm text-slate-600 dark:text-slate-300">{link.originalUrl}</p>
-                      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                        {link.clicks} clicks • {new Date(link.createdAt).toLocaleDateString()}
-                        {link.expiresAt && ` • Expires: ${new Date(link.expiresAt).toLocaleDateString()}`}
-                      </p>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-mono font-bold text-customAccent text-base">{link.shortCode}</span>
+                        <span className="text-xs text-slate-400 dark:text-slate-500">•</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-450 font-medium">
+                          Created {formatDistanceToNow(new Date(link.createdAt), { addSuffix: true })}
+                        </span>
+                      </div>
+                      <p className="truncate text-sm text-slate-650 dark:text-slate-350">{link.originalUrl}</p>
+                      <div className="mt-2 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                        <span>Clicks: <strong className="text-customDark dark:text-white font-semibold">{link.clicks}</strong></span>
+                        {link.lastVisitedAt && (
+                          <>
+                            <span>•</span>
+                            <span>Last visit: {formatDistanceToNow(new Date(link.lastVisitedAt), { addSuffix: true })}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div className="ml-2">
+                    <div className="self-start sm:self-center shrink-0">
                       {isExpired ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-1 text-xs font-semibold text-red-600 dark:text-red-400 whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-950/20 px-2.5 py-0.5 text-xs font-semibold text-red-600 dark:text-red-400 whitespace-nowrap border border-red-200/50 dark:border-red-900/30">
                           ● Expired
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/20 px-2.5 py-0.5 text-xs font-semibold text-emerald-605 dark:text-emerald-450 whitespace-nowrap border border-emerald-200/50 dark:border-emerald-900/30">
                           ● Active
                         </span>
                       )}

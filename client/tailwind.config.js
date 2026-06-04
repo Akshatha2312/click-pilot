@@ -25,6 +25,10 @@ export default {
           amber: "#f59e0b",
           danger: "#ef4444",
         },
+        customBg: "#EAEFEF",
+        customSec: "#BFC9D1",
+        customDark: "#25343F",
+        customAccent: "#FF9B51",
       },
       fontFamily: {
         sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],

@@ -153,6 +153,21 @@ const getDashboardStats = async (req, res) => {
                 _id: null,
                 totalLinks: { $sum: 1 },
                 totalClicks: { $sum: { $ifNull: ["$clicks", 0] } },
+                activeLinks: {
+                  $sum: {
+                    $cond: [
+                      {
+                        $or: [
+                          { $eq: ["$expiresAt", null] },
+                          { $gt: ["$expiresAt", new Date()] }
+                        ]
+                      },
+                      1,
+                      0
+                    ]
+                  }
+                },
+                lastVisitedAt: { $max: "$lastVisitedAt" }
               },
             },
           ],
@@ -171,6 +186,8 @@ const getDashboardStats = async (req, res) => {
                 shortCode: 1,
                 clicks: 1,
                 createdAt: 1,
+                lastVisitedAt: 1,
+                expiresAt: 1,
               },
             },
           ],
@@ -184,6 +201,12 @@ const getDashboardStats = async (req, res) => {
           totalClicks: {
             $ifNull: [{ $arrayElemAt: ["$totals.totalClicks", 0] }, 0],
           },
+          activeLinks: {
+            $ifNull: [{ $arrayElemAt: ["$totals.activeLinks", 0] }, 0],
+          },
+          lastVisitedAt: {
+            $arrayElemAt: ["$totals.lastVisitedAt", 0]
+          },
           latestLinks: 1,
         },
       },
@@ -193,6 +216,8 @@ const getDashboardStats = async (req, res) => {
       success: true,
       totalLinks: summary?.totalLinks ?? 0,
       totalClicks: summary?.totalClicks ?? 0,
+      activeLinks: summary?.activeLinks ?? 0,
+      lastVisitedAt: summary?.lastVisitedAt ?? null,
       latestLinks: summary?.latestLinks ?? [],
     });
   } catch (error) {

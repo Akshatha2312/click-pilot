@@ -13,17 +13,17 @@
   }
 
   body {
-    @apply font-sans antialiased text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-950 transition-colors duration-300;
+    @apply font-sans antialiased text-customDark dark:text-slate-100 bg-customBg dark:bg-customDark transition-colors duration-300;
   }
 
   * {
-    @apply border-slate-200 dark:border-slate-800/60;
+    @apply border-customSec/40 dark:border-white/10;
   }
 }
 
 @layer components {
   .glass {
-    @apply bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 dark:border-slate-800/30;
+    @apply bg-white/70 dark:bg-customDark/65 backdrop-blur-xl border border-white/40 dark:border-white/10;
   }
 
   .heading-xl {
@@ -31,34 +31,34 @@
   }
 
   .heading-lg {
-    @apply font-heading text-3xl font-bold tracking-tight;
+    @apply font-heading text-3xl font-bold tracking-tight text-customDark dark:text-white;
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-white bg-gradient-to-r from-brand-600 via-violet-600 to-fuchsia-600 shadow-lg shadow-brand-600/20 transition-all duration-200 hover:scale-[1.02] hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-white bg-gradient-to-r from-customAccent to-orange-500 shadow-lg shadow-customAccent/20 transition-all duration-200 hover:scale-[1.02] hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-customAccent;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-slate-700 dark:text-slate-200 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/80 transition-all duration-200 hover:scale-[1.02] hover:bg-slate-50 dark:hover:bg-slate-800/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-customDark dark:text-customBg bg-white/90 dark:bg-white/5 border border-customSec dark:border-white/10 transition-all duration-200 hover:scale-[1.02] hover:bg-customSec/20 dark:hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-customAccent;
   }
 
   .card {
-    @apply rounded-2xl border bg-white/80 dark:bg-slate-900/50 backdrop-blur-md shadow-card dark:shadow-cardDark;
+    @apply rounded-2xl border border-customSec/40 dark:border-white/10 bg-white/90 dark:bg-customDark/70 backdrop-blur-md shadow-card dark:shadow-cardDark transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px];
   }
 
   .input {
-    @apply w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white/60 dark:bg-slate-900/50 px-4 py-3 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-400 transition-all;
+    @apply w-full rounded-xl border border-customSec dark:border-white/10 bg-white/60 dark:bg-customDark/50 px-4 py-3 text-customDark dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-customAccent transition-all;
   }
 
   .floating-label {
-    @apply absolute left-3 -top-2.5 rounded bg-white px-1 text-xs font-medium text-slate-500 dark:bg-slate-900 dark:text-slate-300;
+    @apply absolute left-3 -top-2.5 rounded bg-white px-1 text-xs font-medium text-slate-500 dark:bg-customDark dark:text-slate-350;
   }
 }
 
 .animated-bg {
-  background-image: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.12), transparent 40%),
-    radial-gradient(circle at 90% 10%, rgba(34, 211, 238, 0.12), transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.08), transparent 35%);
+  background-image: radial-gradient(circle at 10% 20%, rgba(255, 155, 81, 0.08), transparent 40%),
+    radial-gradient(circle at 90% 10%, rgba(191, 201, 209, 0.12), transparent 45%),
+    radial-gradient(circle at 50% 80%, rgba(37, 52, 63, 0.06), transparent 35%);
 }
 
 /* Premium scrollbar styles */
@@ -130,4 +130,16 @@
 .dark .Toastify__toast--error {
   background: rgba(220, 38, 38, 0.15) !important;
   color: #f87171 !important;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
 }

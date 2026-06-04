@@ -47,32 +47,32 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen animated-bg bg-hero-light dark:bg-hero-dark flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen animated-bg bg-customBg dark:bg-customDark flex items-center justify-center px-4 py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        <div className="card p-8 sm:p-10">
+        <div className="card p-8 sm:p-10 border border-customSec/40 dark:border-white/10 shadow-2xl">
           <div className="mb-8 text-center">
             <Link to="/" className="inline-block group">
               <motion.div
                 whileHover={{ scale: 1.05, rotate: [0, -8, 8, 0] }}
                 transition={{ duration: 0.4 }}
-                className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-violet-600 font-heading text-2xl font-bold text-white shadow-lg shadow-brand-500/15"
+                className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-customAccent to-orange-500 font-heading text-2xl font-bold text-white shadow-lg shadow-customAccent/25"
               >
                 CP
               </motion.div>
             </Link>
             <h1 className="heading-lg">Create account</h1>
-            <p className="mt-2 text-slate-600 dark:text-slate-300">
+            <p className="mt-2 text-slate-650 dark:text-slate-350 font-medium">
               Join thousands of teams using ClickPilot
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              <label className="mb-2 block text-sm font-semibold text-customDark dark:text-slate-200">
                 Full Name
               </label>
               <div className="relative">
@@ -88,11 +88,11 @@ export default function Register() {
                   className={`input pl-10 ${errors.name ? "border-red-400" : ""}`}
                 />
               </div>
-              {errors.name ? <p className="mt-1 text-xs text-red-500">{errors.name}</p> : null}
+              {errors.name ? <p className="mt-1 text-xs text-red-500 font-semibold">{errors.name}</p> : null}
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              <label className="mb-2 block text-sm font-semibold text-customDark dark:text-slate-200">
                 Email Address
               </label>
               <div className="relative">
@@ -108,11 +108,11 @@ export default function Register() {
                   className={`input pl-10 ${errors.email ? "border-red-400" : ""}`}
                 />
               </div>
-              {errors.email ? <p className="mt-1 text-xs text-red-500">{errors.email}</p> : null}
+              {errors.email ? <p className="mt-1 text-xs text-red-500 font-semibold">{errors.email}</p> : null}
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              <label className="mb-2 block text-sm font-semibold text-customDark dark:text-slate-200">
                 Password
               </label>
               <div className="relative">
@@ -128,7 +128,7 @@ export default function Register() {
                   className={`input pl-10 ${errors.password ? "border-red-400" : ""}`}
                 />
               </div>
-              {errors.password ? <p className="mt-1 text-xs text-red-500">{errors.password}</p> : null}
+              {errors.password ? <p className="mt-1 text-xs text-red-500 font-semibold">{errors.password}</p> : null}
             </div>
 
             <motion.button
@@ -142,9 +142,9 @@ export default function Register() {
             </motion.button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-300">
+          <p className="mt-6 text-center text-sm text-slate-650 dark:text-slate-300 font-semibold">
             Already have an account?{" "}
-            <Link to="/login" className="font-semibold text-brand-600 hover:text-brand-700">
+            <Link to="/login" className="text-customAccent hover:underline">
               Sign in
             </Link>
           </p>
