@@ -1,5 +1,5 @@
 import { NavLink, Link, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   HiArrowLeftOnRectangle,
   HiBars3,
@@ -8,7 +8,7 @@ import {
   HiPlusCircle,
   HiXMark,
 } from "react-icons/hi2";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import ThemeToggle from "./ThemeToggle";
 
@@ -37,75 +37,133 @@ export default function Layout() {
     navigate("/login");
   };
 
-  return (
-    <div className="min-h-screen animated-bg bg-customBg dark:bg-customDark transition-colors duration-300">
-      <div className="mx-auto flex max-w-[1600px] gap-4 p-3 sm:p-4 lg:p-6">
-        <motion.aside
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          className={`fixed inset-y-0 left-0 z-40 w-72 transform glass p-4 transition-transform duration-300 lg:static lg:translate-x-0 lg:min-h-[calc(100vh-3rem)] lg:rounded-3xl ${open ? "translate-x-0" : "-translate-x-full"}`}
-        >
-          <div className="mb-8 flex items-center justify-between">
-            <Link to="/app/dashboard" className="flex items-center gap-3 group">
-              <motion.div
-                whileHover={{ scale: 1.05, rotate: [0, -8, 8, 0] }}
-                transition={{ duration: 0.4 }}
-                className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-customAccent to-orange-500 font-heading text-lg font-bold text-white shadow-md shadow-customAccent/10"
-              >
-                CP
-              </motion.div>
-              <div>
-                <h1 className="font-heading text-xl font-bold tracking-tight text-customDark dark:text-white group-hover:text-customAccent transition-colors">ClickPilot</h1>
-                <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Smart Link Platform</p>
-              </div>
-            </Link>
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  const renderSidebarContent = (isMobile = false) => (
+    <div className="flex flex-col h-full justify-between">
+      <div>
+        <div className="mb-8 flex items-center justify-between">
+          <Link to="/app/dashboard" className="flex items-center gap-3 group" onClick={() => isMobile && setOpen(false)}>
+            <motion.div
+              whileHover={{ scale: 1.05, rotate: [0, -8, 8, 0] }}
+              transition={{ duration: 0.4 }}
+              className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-customAccent to-orange-500 font-heading text-lg font-bold text-white shadow-md shadow-customAccent/10"
+            >
+              CP
+            </motion.div>
+            <div>
+              <h1 className="font-heading text-xl font-bold tracking-tight text-customDark dark:text-white group-hover:text-customAccent transition-colors">ClickPilot</h1>
+              <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">Smart Link Platform</p>
+            </div>
+          </Link>
+          {isMobile && (
             <button
               type="button"
-              className="lg:hidden rounded-lg p-2 hover:bg-customSec/20 dark:hover:bg-white/10"
+              className="rounded-xl p-2 hover:bg-customSec/20 dark:hover:bg-white/10 text-customDark dark:text-white transition-colors"
               onClick={() => setOpen(false)}
             >
-              <HiXMark className="h-5 w-5 text-customDark dark:text-white" />
+              <HiXMark className="h-5 w-5" />
             </button>
-          </div>
+          )}
+        </div>
 
-          <div className="mb-7 rounded-2xl bg-gradient-to-br from-customAccent/10 to-orange-500/10 p-4 border border-customAccent/10">
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Signed in as</p>
-            <p className="mt-0.5 truncate font-semibold text-customDark dark:text-slate-200">{user?.name || user?.email}</p>
-          </div>
+        <div className="mb-7 rounded-2xl bg-gradient-to-br from-customAccent/10 to-orange-500/10 p-4 border border-customAccent/10">
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Signed in as</p>
+          <p className="mt-0.5 truncate font-semibold text-customDark dark:text-slate-200">{user?.name || user?.email}</p>
+        </div>
 
-          <nav className="space-y-1.5 relative">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
+        <nav className="space-y-1.5 relative">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              onClick={() => isMobile && setOpen(false)}
+              className={({ isActive }) =>
+                `group relative flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition-all duration-200 ${
+                  isActive
+                    ? "text-white"
+                    : "text-customDark dark:text-slate-200 hover:bg-customSec/25 dark:hover:bg-white/5"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <motion.span
+                      layoutId={isMobile ? "activeNavMobile" : "activeNavDesktop"}
+                      className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-customAccent to-orange-500 shadow-md shadow-customAccent/25"
+                      transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                    />
+                  )}
+                  <span className={isActive ? "text-white" : "text-customDark/70 dark:text-slate-400 group-hover:text-customAccent transition-colors"}>
+                    {item.icon}
+                  </span>
+                  <span>{item.label}</span>
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
+
+      <div className="pt-4 border-t border-customSec/20 dark:border-white/5 mt-auto">
+        <button
+          onClick={handleLogout}
+          type="button"
+          className="w-full flex items-center gap-3 rounded-xl px-4 py-3 font-semibold text-red-500 hover:bg-red-500/10 transition-colors"
+        >
+          <HiArrowLeftOnRectangle className="h-5 w-5" />
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen animated-bg bg-customBg dark:bg-customDark transition-colors duration-300">
+      <div className="mx-auto flex max-w-[1600px] gap-4 p-3 sm:p-4 lg:p-6 relative">
+        
+        {/* Desktop Sidebar - Static & Hidden on Mobile */}
+        <aside className="hidden lg:block w-72 min-h-[calc(100vh-3rem)] rounded-3xl glass p-4 shrink-0">
+          {renderSidebarContent(false)}
+        </aside>
+
+        {/* Mobile Sidebar - Drawer Overlay with AnimatePresence */}
+        <AnimatePresence>
+          {open && (
+            <>
+              {/* Dark Overlay */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="fixed inset-0 z-40 bg-customDark/60 backdrop-blur-xs lg:hidden"
                 onClick={() => setOpen(false)}
-                className={({ isActive }) =>
-                  `group relative flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition-all duration-200 ${
-                    isActive
-                      ? "text-white"
-                      : "text-customDark dark:text-slate-200 hover:bg-customSec/25 dark:hover:bg-white/5"
-                  }`
-                }
+              />
+              
+              {/* Drawer Container */}
+              <motion.aside
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 220 }}
+                className="fixed inset-y-0 left-0 z-50 w-72 glass p-4 lg:hidden shadow-2xl h-full overflow-y-auto"
               >
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <motion.span
-                        layoutId="activeNav"
-                        className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-customAccent to-orange-500 shadow-md shadow-customAccent/25"
-                        transition={{ type: "spring", stiffness: 350, damping: 28 }}
-                      />
-                    )}
-                    <span className={isActive ? "text-white" : "text-customDark/70 dark:text-slate-400 group-hover:text-customAccent transition-colors"}>
-                      {item.icon}
-                    </span>
-                    <span>{item.label}</span>
-                  </>
-                )}
-              </NavLink>
-            ))}
-          </nav>
-        </motion.aside>
+                {renderSidebarContent(true)}
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
 
         <div className="min-w-0 flex-1 flex flex-col">
           <header className="glass mb-4 flex items-center justify-between rounded-2xl px-4 py-3 lg:px-6 sticky top-3 sm:top-4 lg:top-6 z-30 shadow-sm border border-white/20 dark:border-white/5">
@@ -152,8 +210,6 @@ export default function Layout() {
           </footer>
         </div>
       </div>
-
-      {open ? <button type="button" className="fixed inset-0 z-30 bg-customDark/40 backdrop-blur-xs lg:hidden" onClick={() => setOpen(false)} /> : null}
     </div>
   );
 }

@@ -4,10 +4,10 @@ import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { HiArrowLeft, HiLink, HiEye, HiCalendarDays } from "react-icons/hi2";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer } from "recharts";
+import { API_BASE_URL, getShortUrl } from "../api/axios";
 import axios from "axios";
 
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 export default function PublicStats() {
   const { shortCode } = useParams();
@@ -56,7 +56,7 @@ export default function PublicStats() {
     );
   }
 
-  const shortUrl = `${API_BASE_URL}/api/links/${stats.shortCode}`;
+  const shortUrl = getShortUrl(stats.shortCode);
   const isExpired = stats.status === "expired";
 
   return (

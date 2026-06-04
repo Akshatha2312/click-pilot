@@ -2,11 +2,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { QRCodeCanvas } from "qrcode.react";
 import { HiOutlineArrowDownTray, HiOutlineClipboard, HiOutlineShare } from "react-icons/hi2";
 import { toast } from "react-toastify";
+import { getShortUrl } from "../api/axios";
 
 export default function QRCodeModal({ link, onClose }) {
   if (!link) return null;
 
-  const url = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}/api/links/${link.shortCode}`;
+  const url = getShortUrl(link.shortCode);
 
   const downloadQr = () => {
     const canvas = document.getElementById("clickpilot-qr");

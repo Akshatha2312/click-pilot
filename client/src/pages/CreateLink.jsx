@@ -9,11 +9,11 @@ import {
   HiClipboard,
 } from "react-icons/hi2";
 
-import api, { API_BASE_URL } from "../api/axios";
+import api, { API_BASE_URL, getShortUrl } from "../api/axios";
 
 const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 };
 
 export default function CreateLink() {
@@ -30,7 +30,7 @@ export default function CreateLink() {
   const [availability, setAvailability] = useState(null);
 
   const shortUrl = createdLink
-    ? `${API_BASE_URL}/api/links/${createdLink.shortCode}`
+    ? getShortUrl(createdLink.shortCode)
     : "";
 
   const validate = () => {
@@ -145,7 +145,7 @@ export default function CreateLink() {
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(shortUrl);
-      toast.success("Copied");
+      toast.success("Copied to clipboard!");
     } catch {
       toast.error("Copy failed");
     }
@@ -155,59 +155,53 @@ export default function CreateLink() {
     <motion.div
       initial="hidden"
       animate="show"
-      className="flex flex-col items-center px-4 py-6"
+      className="min-h-[calc(100vh-16rem)] flex flex-col justify-center items-center py-6 px-4"
     >
-      <motion.div variants={item}>
-        <h1 className="heading-lg">
-          Create Short Link
-        </h1>
+      <div className="w-full max-w-xl space-y-6">
+        <motion.div variants={item} className="text-center sm:text-left">
+          <h1 className="heading-lg">Create Short Link</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 font-medium">
+            Paste your long URL below to generate a branded, trackable short link.
+          </p>
+        </motion.div>
 
-        <p className="text-slate-600">
-          Paste URL and create short link
-        </p>
-      </motion.div>
-
-      <div className="w-full max-w-xl mt-6">
-        <motion.div
-          variants={item}
-          className="card p-8"
-        >
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-5"
-          >
+        <motion.div variants={item} className="card p-6 sm:p-8 border border-customSec/35 dark:border-white/5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block mb-2 text-sm font-medium">
+              <label className="block mb-2 text-sm font-semibold text-customDark dark:text-slate-200">
                 Original URL
               </label>
 
-              <div className="relative">
-                <HiLink className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+              <div className="relative flex items-center">
+                <HiLink className="absolute left-4 h-5 w-5 text-slate-450 dark:text-slate-400 pointer-events-none" />
 
                 <input
                   type="url"
                   value={form.originalUrl}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     setForm({
                       ...form,
                       originalUrl: e.target.value,
-                    })
-                  }
-                  placeholder="https://example.com"
-                  className="input pl-10 w-full"
+                    });
+                    if (errors.originalUrl) {
+                      setErrors({ ...errors, originalUrl: "" });
+                    }
+                  }}
+                  placeholder="https://example.com/very-long-link-to-shorten"
+                  className={`input pl-11 pr-4 w-full ${errors.originalUrl ? "border-red-400" : ""}`}
                 />
               </div>
 
               {errors.originalUrl && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-red-500 text-xs mt-1.5 font-semibold">
                   {errors.originalUrl}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium">
-                Custom Code
+              <label className="block mb-2 text-sm font-semibold text-customDark dark:text-slate-200">
+                Custom Code (Optional)
               </label>
 
               <div className="flex gap-2">
@@ -219,7 +213,6 @@ export default function CreateLink() {
                       ...form,
                       shortCode: e.target.value,
                     });
-
                     setAvailability(null);
                   }}
                   placeholder="my-code"
@@ -229,35 +222,31 @@ export default function CreateLink() {
                 <button
                   type="button"
                   onClick={checkAvailability}
-                  className="btn-primary"
+                  disabled={checking}
+                  className="btn-primary py-2 px-5 text-sm shrink-0 shadow-sm"
                 >
-                  {checking
-                    ? "Checking..."
-                    : "Check"}
+                  {checking ? "Checking..." : "Check"}
                 </button>
               </div>
 
               {availability !== null && (
                 <p
-                  className={`text-xs mt-1 ${availability
-                    ? "text-green-600"
-                    : "text-red-600"
-                    }`}
+                  className={`text-xs mt-1.5 font-bold ${
+                    availability ? "text-emerald-500" : "text-red-500"
+                  }`}
                 >
-                  {availability
-                    ? "Available"
-                    : "Already Taken"}
+                  {availability ? "✓ Short code is available!" : "✕ Short code is already taken"}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium">
-                Expiry Date
+              <label className="block mb-2 text-sm font-semibold text-customDark dark:text-slate-200">
+                Expiry Date (Optional)
               </label>
 
-              <div className="relative">
-                <HiCalendarDays className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+              <div className="relative flex items-center">
+                <HiCalendarDays className="absolute left-4 h-5 w-5 text-slate-450 dark:text-slate-400 pointer-events-none" />
 
                 <input
                   type="datetime-local"
@@ -268,7 +257,7 @@ export default function CreateLink() {
                       expiresAt: e.target.value,
                     })
                   }
-                  className="input pl-10 w-full"
+                  className="input pl-11 pr-4 w-full"
                 />
               </div>
             </div>
@@ -276,13 +265,10 @@ export default function CreateLink() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full flex items-center justify-center gap-2"
+              className="btn-primary w-full flex items-center justify-center gap-2 mt-4"
             >
-              {loading
-                ? "Creating..."
-                : "Create Link"}
-
-              {!loading && <HiArrowRight />}
+              {loading ? "Creating..." : "Create Link"}
+              {!loading && <HiArrowRight className="h-5 w-5" />}
             </button>
           </form>
         </motion.div>
@@ -290,28 +276,33 @@ export default function CreateLink() {
         {createdLink && (
           <motion.div
             variants={item}
-            className="card p-6 mt-6"
+            className="card p-6 border-2 border-emerald-500/25 bg-emerald-50/10 dark:bg-emerald-950/5 mt-6"
           >
-            <div className="text-center">
-              <HiCheck className="mx-auto h-10 w-10 text-green-600 mb-3" />
+            <div className="text-center space-y-4">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-450 shadow-md">
+                <HiCheck className="h-6 w-6" />
+              </div>
 
-              <h2 className="font-semibold mb-3">
-                Link Created
-              </h2>
-
-              <div className="border rounded-lg p-3">
-                <p className="font-mono break-all">
-                  {shortUrl}
+              <div>
+                <h2 className="text-lg font-bold text-customDark dark:text-white">
+                  Link Created Successfully!
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Your short link is active and ready to share.
                 </p>
               </div>
 
-              <button
-                onClick={copyToClipboard}
-                className="btn-primary mt-4 flex items-center justify-center gap-2 w-full"
-              >
-                <HiClipboard />
-                Copy Link
-              </button>
+              <div className="border border-customSec/40 dark:border-white/10 rounded-2xl p-4 bg-white/50 dark:bg-customDark/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p className="font-mono text-sm font-bold text-customDark dark:text-white break-all flex-1 text-left select-all">
+                  {shortUrl}
+                </p>
+                <button
+                  onClick={copyToClipboard}
+                  className="btn-primary py-2.5 px-4 text-xs font-semibold flex items-center justify-center gap-1.5 w-full sm:w-auto shadow-sm"
+                >
+                  <HiClipboard className="h-4 w-4" /> Copy Link
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
