@@ -289,7 +289,7 @@ export default function MyLinks() {
                               <HiQrCode className="h-4.5 w-4.5" />
                             </button>
                             <a
-                              href={link.originalUrl}
+                              href={getShortUrl(link.shortCode)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center justify-center h-8.5 w-8.5 rounded-xl bg-white dark:bg-customDark/75 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 text-slate-500 dark:text-slate-400 hover:text-indigo-650 dark:hover:text-indigo-400 border border-customSec/40 dark:border-white/10 transition-all duration-150 shadow-sm"

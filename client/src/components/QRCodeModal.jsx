@@ -1,10 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { QRCodeCanvas } from "qrcode.react";
+import { getShortUrl } from "../api/axios";
 
 export default function QRCodeModal({ link, onClose }) {
   if (!link) return null;
 
-  const url = link.originalUrl;
+  const url = getShortUrl(link.shortCode);
 
   return (
     <AnimatePresence>
