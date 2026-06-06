@@ -240,12 +240,9 @@ export default function MyLinks() {
                         className="hover:bg-customSec/10 dark:hover:bg-white/5 transition-colors duration-200"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2.5">
-                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-customAccent/10 font-mono font-bold text-customAccent text-xs">
-                              {link.shortCode[0].toUpperCase()}
-                            </span>
-                            <code className="font-mono font-bold text-customDark dark:text-white text-sm">{link.shortCode}</code>
-                          </div>
+                          <code className="font-mono font-bold text-customDark dark:text-white text-sm pl-2">
+                            {link.shortCode}
+                          </code>
                         </td>
                         <td className="px-6 py-4">
                           <div className="max-w-xs truncate text-slate-600 dark:text-slate-300 font-medium" title={link.originalUrl}>
@@ -292,7 +289,7 @@ export default function MyLinks() {
                               <HiQrCode className="h-4.5 w-4.5" />
                             </button>
                             <a
-                              href={getShortUrl(link.shortCode)}
+                              href={link.originalUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center justify-center h-8.5 w-8.5 rounded-xl bg-white dark:bg-customDark/75 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 text-slate-500 dark:text-slate-400 hover:text-indigo-650 dark:hover:text-indigo-400 border border-customSec/40 dark:border-white/10 transition-all duration-150 shadow-sm"
@@ -348,10 +345,7 @@ export default function MyLinks() {
                   >
                     <div className="flex items-center justify-between border-b border-customSec/20 dark:border-white/5 pb-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-customAccent/10 font-mono font-bold text-customAccent text-xs">
-                          {link.shortCode[0].toUpperCase()}
-                        </span>
-                        <code className="font-mono font-bold text-customDark dark:text-white text-base">{link.shortCode}</code>
+                        <code className="font-mono font-bold text-customDark dark:text-white text-base pl-2">{link.shortCode}</code>
                       </div>
                       <div>
                         {isExpired ? (

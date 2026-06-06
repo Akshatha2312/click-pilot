@@ -65,6 +65,10 @@ app.use("/api/auth", authRoutes);
 app.use("/api/links/create", createLinkLimiter);
 app.use("/api/links", linkRoutes);
 
+// Public short URL redirect (e.g., https://frontend.com/s/abc)
+const { redirectLink } = require("./controllers/linkController");
+app.get("/s/:shortCode", redirectLink);
+
 // Health Check Route
 app.get("/", (req, res) => {
   res.json({

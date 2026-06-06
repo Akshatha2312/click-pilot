@@ -329,7 +329,7 @@ const deleteLink = async (req, res) => {
   }
 };
 
-const redirectLink = async (req, res) => {
+const redirectLink = async (req, res) => { console.log("SHORT CODE:", req.params.shortCode);
   try {
     const { shortCode } = req.params;
 
@@ -444,7 +444,7 @@ const redirectLink = async (req, res) => {
     }
 console.log("FOUND LINK:", link);
 console.log("REDIRECTING TO:", link.originalUrl);
-    return res.redirect(link.originalUrl);
+    console.log("LINK FOUND:", link); console.log("REDIRECTING TO:", link.originalUrl); return res.redirect(link.originalUrl);
   } catch (error) {
     return res.status(500).json({
       success: false,
