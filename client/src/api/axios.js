@@ -21,9 +21,18 @@ export const getShortUrl = (shortCode) => `${effectiveFrontend}/s/${shortCode}`;
 export { API_BASE_URL, FRONTEND_URL };
 // Create a reusable Axios instance for API calls
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  // You can add default headers or interceptors here if needed
+  baseURL: `${API_BASE_URL}/api`,
+  timeout: 30000,
   withCredentials: true,
+});
+
+// JWT interceptor to attach token to Authorization header
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("clickpilot_token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export default api;
